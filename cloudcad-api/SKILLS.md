@@ -951,3 +951,4 @@ Apply the same formula to `angleDimensionTextSize`, `radiusDimensionTextSize`, `
 
 ## Integration with other tools
 
+If you're on the SkyCiv platform (i.e. hosted on platform.skyciv.com) you can use `SKYCIV_UTILS.exportToCad(cad_data)` to launch a CAD file from another product. This is helpful if you are auto-generating drawings from another SkyCiv product. This is not available on prototypes.
