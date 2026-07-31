@@ -1,0 +1,33 @@
+<svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg" font-family="monospace">
+  <style>
+    .axis  { stroke:#1a202c; stroke-width:2; }
+    .circ  { fill:#ffffff; stroke:#1a202c; stroke-width:2; }
+    .lbl   { fill:#1a202c; font-size:13px; }
+    .lbl2  { fill:#718096; font-size:12px; }
+    .brace { stroke:#dd6b20; stroke-width:1.5; fill:none; }
+  </style>
+  <rect x="0" y="0" width="480" height="220" fill="#ffffff"/>
+
+  <!-- axis label circle at the top, like a gridline callout -->
+  <circle class="circ" cx="240" cy="35" r="16"/>
+  <text class="lbl" x="235" y="40" font-weight="bold">A</text>
+  <line class="axis" x1="240" y1="51" x2="240" y2="70"/>
+
+  <!-- dash-dot pattern: long dash, gap, short dash, gap, repeating -->
+  <line class="axis" x1="240" y1="70"  x2="240" y2="100"/>
+  <line class="axis" x1="240" y1="112" x2="240" y2="120"/>
+  <line class="axis" x1="240" y1="132" x2="240" y2="162"/>
+  <line class="axis" x1="240" y1="174" x2="240" y2="182"/>
+  <line class="axis" x1="240" y1="194" x2="240" y2="210"/>
+
+  <!-- axisDashLength bracket, over the long dash -->
+  <path class="brace" d="M270,70 L280,70 L280,100 L270,100"/>
+  <text class="lbl2" x="286" y="90">axisDashLength</text>
+
+  <!-- axisDashGap bracket, over the gap -->
+  <path class="brace" d="M270,100 L280,100 L280,112 L270,112"/>
+  <text class="lbl2" x="286" y="110">axisDashGap</text>
+
+  <text class="lbl2" x="60" y="20">Axes always render dash-dot — pattern set by the</text>
+  <text class="lbl2" x="60" y="36">style's axisDashLength / axisDashGap (in mm)</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg viewBox="0 0 480 280" xmlns="http://www.w3.org/2000/svg" font-family="monospace">
+  <style>
+    .l1    { stroke:#2b6cb0; stroke-width:3; }
+    .l2    { stroke:#38a169; stroke-width:3; }
+    .arc   { stroke:#dd6b20; stroke-width:2; fill:none; }
+    .pt    { fill:#1a202c; }
+    .lbl   { fill:#1a202c; font-size:13px; }
+    .lbl2  { fill:#718096; font-size:12px; }
+    .val   { fill:#dd6b20; font-size:14px; font-weight:bold; }
+  </style>
+  <rect x="0" y="0" width="480" height="280" fill="#ffffff"/>
+
+  <!-- shared vertex -->
+  <circle class="pt" cx="200" cy="210" r="4"/>
+  <text class="lbl" x="150" y="235">intersection</text>
+
+  <!-- l1: intersection -> l1.p2 (horizontal ray) -->
+  <line class="l1" x1="200" y1="210" x2="400" y2="210"/>
+  <circle class="pt" cx="400" cy="210" r="4"/>
+  <text class="lbl" x="330" y="230" fill="#2b6cb0">l1.p2</text>
+
+  <!-- l2: intersection -> l2.p2 (up-left ray) -->
+  <line class="l2" x1="200" y1="210" x2="90" y2="70"/>
+  <circle class="pt" cx="90" cy="70" r="4"/>
+  <text class="lbl" x="40" y="60" fill="#38a169">l2.p2</text>
+
+  <!-- angle arc between the two rays, through p -->
+  <path class="arc" d="M 280,210 A 80,80 0 0 0 227,138"/>
+  <circle class="pt" cx="252" cy="168" r="4" fill="#dd6b20"/>
+  <text class="val" x="258" y="165">p</text>
+  <text class="val" x="252" y="190">52.0°</text>
+
+  <text class="lbl2" x="10" y="20">l1 / l2: two lines sharing the "intersection" vertex</text>
+  <text class="lbl2" x="10" y="38">p: point the arc + angle label are drawn through</text>
+</svg>

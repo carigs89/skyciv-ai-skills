@@ -119,7 +119,41 @@ All length values are in **mm** and should scale with your drawing. The values a
 
 `linearArrowShape` / `angleArrowShape` / `radiusArrowShape` / `leaderArrowShape`: `"arrow"`, `"dot"`, `"architectural"`, `"none"`.
 
+`axisDashLength` / `axisDashGap` control the dash-dot line pattern axes render with (the
+standard drafting convention for gridlines/centerlines — a long dash, a gap, then a short
+dash) — `axisDashLength` is the length of each dash segment, `axisDashGap` is the gap
+between segments, both in mm. This is a property of the **axis line itself**, distinct
+from `lineType` on a `Layer` (see "Layers" below), which controls dash style for ordinary
+lines/polylines.
+
+A real platform-exported style also carries per-dimension-type label formatting fields, confirmed from a live export — all optional, omit to use platform defaults:
+
+| Key pattern (`linear`/`angle`/`radius`) | Type | Description |
+|---|---|---|
+| `{type}Prefix` / `{type}Suffix` | `string` | Text before/after the dimension value, e.g. `"R"` prefix for radius labels |
+| `{type}Precision` | `number` | Decimal places shown |
+| `{type}DecimalSep` | `string` | Decimal separator, e.g. `"."` |
+| `{type}RoundOff` | `number` | Round the displayed value to the nearest multiple of this |
+| `{type}ToleranceType` | `string` | `"none"` or a tolerance display mode |
+| `{type}ToleranceUpper` / `{type}ToleranceLower` | `number` | Tolerance band shown alongside the value |
+| `linearShowUnits` / `radiusShowUnits` | `string` | `"yes"` / `"no"` — show the unit suffix on the label |
+| `angleUnitFormat` | `string` | `"decimal"` (seen in a real export); degrees-minutes-seconds format is presumably also supported but not confirmed |
+| `angleAltUnits` | `string` | `"none"` (seen in a real export) — alternate unit display, not otherwise confirmed |
+
 Elements that accept `"attributeStyleId"`: `dimensions`, `angleDimensions`, `radiusDimensions`, `leaderTexts`, `multiLeaderTexts`, `texts`, `axes`, `tables`.
+
+> **Supporting more than one plot scale? Scale the style, never the geometry.** If your
+> drawing generator picks between plot scales (e.g. 1:50 for a small object, 1:100 for a
+> larger one that wouldn't fit at 1:50 — see "Never scale model geometry" below for why
+> geometry itself must always stay true mm), define `attributeStyles` per plot scale by
+> multiplying every length-valued setting (`dimensionTextSize`, `linearArrowLength`/
+> `linearArrowWidth`, `angleTextOffset`, `axisExtension`, `axisDashLength`/`axisDashGap`,
+> `tableFontSize`, etc. — anything measured in mm, not a string enum) by
+> `k = chosenScale / baselineScale`. Apply that same `k` to any reused page furniture
+> (title block border, table) too. This keeps arrows, dimension text, and the title block
+> at one constant *physical* size on the printed sheet no matter which plot scale a given
+> drawing ends up using — confirmed working in a generator that adaptively picks between
+> two plot scales per install.
 
 ---
 
@@ -183,12 +217,28 @@ An array of canvas (drawing sheet) objects. Each canvas is a self-contained draw
 
 Note: `attributeStyles` and `blockReferences` are **top-level** fields on the root object
 (alongside `settings` and `canvases`), not inside each canvas — a canvas only places
-blocks via `block_instances`, it doesn't define them. (A stray empty `"block_references":
-[]` on a canvas is harmless if present, but does nothing — it's not where block
-definitions actually live.)
+blocks via `block_instances`, it doesn't define them. A per-canvas `"block_references"`
+(snake_case) array can also appear — in a genuine platform-exported file this was **not**
+empty, but a denormalized copy of the top-level `blockReferences` entries (same `id`s,
+plus extra UI-only fields like `sourceLibraryUid`/`sourceBlockId` and per-item
+`layerIds`). It's still not authoritative and safe to omit or leave as `[]` when creating
+a drawing programmatically — always write block definitions to the top-level
+`blockReferences` only.
 
 `drawing_type`: `"Plan"`, `"Elevation"`, etc.  
 All array fields must be present (use `[]` if empty).
+
+A real export also carries extra top-level/per-canvas fields the platform writes on
+save/open that aren't needed when creating a drawing via the API: a root `"comments":
+[]` array, a per-canvas `"pdfExport"` (mirrors the root-level one described below —
+UI dialog state, not required), a per-canvas `"s3d"` object holding unrelated UI-dismiss
+flags (e.g. `auto_schedule_table_dismissed`, distinct from the root `s3d` structural
+mapping described above), grouping metadata arrays (`points_group`, `edges_group`,
+`sections_group`), and a `"canvas_group"` object (`role`, `group_id`,
+`parent_canvas_id`, `color_id`) describing multi-canvas relationships. Safe to omit
+these when constructing `cad_data` from scratch — they default correctly — but don't
+be alarmed if they appear when you `cloudcad.file.open` an existing drawing and read
+its JSON back.
 
 ---
 
@@ -257,6 +307,8 @@ Defined by start, end, and a control point on the arc.
 
 ### Dimensions (Linear)
 
+![Linear dimension anatomy: p1/p2 mark the measured segment, offsetPoint sets how far the dimension line floats and where its value text sits](assets/images/dimension-linear.svg)
+
 ```json
 {
   "p1": { "x": 0, "y": 0 },
@@ -270,6 +322,72 @@ Defined by start, end, and a control point on the arc.
 
 `projectionType`: `"vertical"`, `"horizontal"`, or omit for auto.  
 Always include `attributeStyleId` so arrow and text sizes are correct.
+
+> **Only horizontal/vertical projections are supported** — passing `p1`/`p2` for a
+> tilted (non-axis-aligned) measurement silently falls back to a non-tilted dimension
+> with the wrong value, instead of erroring. Confirmed the hard way building an MT Solar
+> rail-length dimension along a tilted panel. To dimension a true diagonal/tilted
+> distance, don't use this entity — build it from primitives instead: two short
+> `leaderText` extension ticks (style `"as-plain-ext"` for no arrowhead) off the two
+> measured points, projected out perpendicular to the tilt, plus a `leaderText`
+> dimension line parallel to the tilt with a value label you compute and format
+> yourself (so it always matches the real geometry, since nothing here calculates it
+> for you).
+
+---
+
+### Angle Dimensions
+
+Measures the angle between two lines that share a common vertex. Confirmed from a real platform-exported file.
+
+![Angle dimension anatomy: l1 and l2 share the intersection vertex, p sets both the arc radius and the label position](assets/images/dimension-angle.svg)
+
+```json
+{
+  "l1": {
+    "p1": { "x": -5980, "y": -2400 },
+    "p2": { "x": -7260, "y": -680 }
+  },
+  "l2": {
+    "p1": { "x": -8360, "y": -2400 },
+    "p2": { "x": -5980, "y": -2400 }
+  },
+  "intersection": { "x": -5980, "y": -2400 },
+  "p": { "x": -5760, "y": -1060 },
+  "id": "uuid",
+  "attributeStyleId": "as-default"
+}
+```
+
+- `l1` / `l2`: the two lines forming the angle, each a `{p1, p2}` pair. One endpoint of `l1` and one endpoint of `l2` must equal `intersection` — the shared vertex the angle is measured at.
+- `intersection`: the vertex point shared by both lines.
+- `p`: where the angle arc and its label are drawn — a point out from the vertex, roughly between the sweep of the two lines. Analogous to `offsetPoint` on a linear dimension.
+- Always include `attributeStyleId` — the style's `angleArrowShape`, `angleDimensionTextSize`, `angleTextOffset`, and `angleTextOrientation` fields control its display.
+
+> **Three non-obvious behaviors, confirmed building a tilt-angle dimension for an
+> MT Solar elevation:**
+> - **`p`'s distance from `intersection` sets the arc's radius** — CloudCAD draws the
+>   arc, and each ray's extension tick, out to `p`'s distance from the vertex, *not*
+>   out to `l1`/`l2`'s own `p2` endpoints. If you want a ray's tick to land exactly on
+>   a real geometry point (e.g. a panel corner), set `p`'s distance from `intersection`
+>   equal to that point's distance from `intersection` — don't just eyeball `p`'s
+>   position.
+> - **Sweep direction depends on which way `l1` points, not just its angle.** Swapping
+>   `l1`'s ray to point the opposite way (same line, reversed) swept the arc through the
+>   *supplement* of the intended angle (e.g. `180° - tilt` instead of `tilt`) even though
+>   `l2` and `intersection` were unchanged. `l1` needs to point the same rotational way
+>   as `l2`'s sweep for the drawn angle to match the real one.
+> - **Anchor at least one ray to a real geometry point**, not a virtual/constructed one —
+>   otherwise the dimension doesn't visually read as connecting to anything. If neither
+>   line's other endpoint is naturally a real point, compute `intersection` by projecting
+>   *back* from a real point along its true line/slope (not by dropping it straight down
+>   or across), so the ray's far endpoint stays exact.
+
+---
+
+### Radius Dimensions
+
+Present in the canvas schema (`"radiusDimensions": []`) and accepted in the `attributeStyleId` list, but **no populated example has been found in a live export yet** — both `assets/all-elements.json` and `assets/Title-Block-Example.json` show it only as an always-empty array. Don't guess this element's field structure (see the "Never scale model geometry..." warning above for why this skill treats unverified schema as a real risk, not a formality). Before generating one programmatically, round-trip test it: create a radius dimension manually in the CloudCAD UI, save, `cloudcad.file.open` it back, and read the resulting JSON to confirm the real field names.
 
 ---
 
@@ -320,6 +438,7 @@ Text annotation with multiple arrow leaders.
   "backgroundColorOpacity": 0,
   "alignment": "center",
   "textPosition": "middle-center",
+  "rotation": 0,
   "bold": false,
   "italic": false,
   "id": "uuid",
@@ -327,12 +446,25 @@ Text annotation with multiple arrow leaders.
 }
 ```
 
+`rotation` is in degrees (confirmed from a real export). A real export also carries computed layout fields (`boxWidth`, `boxHeight`, `boxMinHeight`, `start_pos`, `end_pos`, `totalWidth`, `totalHeight`) — these are derived by the platform from `text`/`size`/`position` and can be omitted when creating a text element programmatically.
+
 `alignment`: `"left"`, `"center"`, `"right"`.  
 `textPosition` (**required** — omitting it will crash selection): `"top-left"`, `"top-center"`, `"top-right"`, `"middle-left"`, `"middle-center"`, `"middle-right"`, `"bottom-left"`, `"bottom-center"`, `"bottom-right"`. Default to `"middle-center"`.  
 `backgroundColorOpacity`: `0` = transparent, `1` = opaque.  
 `size` is in pixels — use `14` for body text, `20–28` for headings. The `attributeStyleId` can override this if `textSizeOverride` is enabled on the style.
 
 > **CRITICAL — text color:** The canvas background is dark. **Always set `color` to a light value** (`"#ffffff"` for headings, `"#e2e8f0"` for body, `"#94a3b8"` for secondary labels). **Never use `"#333333"`, `"#222222"`, `"#000000"`, or any other dark/black color** — dark text is invisible on the dark canvas and cannot be read by the user.
+
+> **`alignment: "center"` / `"right"` double-compensates if you've already positioned the
+> text yourself.** Confirmed by measuring a rendered title against its true geometric
+> center: the platform applies its *own* additional horizontal shift on top of whatever
+> `position` you supply whenever `alignment` is `"center"` or `"right"` — it isn't a
+> pure "anchor the box this way" flag. If you're computing `position` yourself (e.g. to
+> center a title over a drawing), the reliable pattern is to estimate the text's
+> rendered width, shift `position.x` by that estimate yourself, and always emit
+> `alignment: "left"` — never let the platform apply a second shift on top of your own.
+> A rough width estimator that's held up across several re-measured strings:
+> `renderedWidth ≈ text.length * size * 16` (in the same mm-like units as `position`).
 
 ---
 
@@ -343,6 +475,7 @@ Text annotation with multiple arrow leaders.
   "id": "uuid",
   "attributeStyleId": "as-default",
   "position": { "x": 0, "y": 0 },
+  "title": "MY CUSTOM TABLE",
   "rows": [
     ["Header 1", "Header 2", "Header 3"],
     ["Cell 1",   "Cell 2",   "Cell 3"]
@@ -361,11 +494,15 @@ Text annotation with multiple arrow leaders.
 }
 ```
 
+`title` (optional, confirmed from a real export) renders as a caption above the table.
+
 ---
 
 ### Axes (Gridlines)
 
 A labeled reference axis/gridline between two points.
+
+![Axis dash-dot line pattern set by axisDashLength and axisDashGap, with the label circle at the terminus](assets/images/axis-dashdot.svg)
 
 ```json
 {
@@ -376,6 +513,11 @@ A labeled reference axis/gridline between two points.
   "attributeStyleId": "as-default"
 }
 ```
+
+Axes always render as a **dash-dot line** (the standard convention for gridlines/
+centerlines) — the dash length and gap come from the referenced style's
+`axisDashLength` / `axisDashGap` (see "attributeStyles" above), not from a per-element
+field.
 
 ---
 
@@ -388,15 +530,20 @@ Infinite reference lines defined by a point and angle.
   "point": { "x": 0, "y": 0 },
   "angle": 90,
   "id": "uuid",
-  "isHidden": false
+  "isHidden": false,
+  "lineType": "dashdotdot"
 }
 ```
 
-`angle` is in degrees.
+`angle` is in degrees. `lineType` (optional, confirmed from a real export) accepts the
+same values as a `Layer`'s `lineType` (see "Layers" below) — e.g. `"dashdotdot"` for a
+centerline convention — and overrides the layer default for this element.
 
 ---
 
 ### Revision Clouds
+
+![Revision cloud bounding-box fields: rectangular uses minX/minY/maxX/maxY, circular uses center/radius](assets/images/revision-clouds.svg)
 
 #### Rectangular
 
@@ -454,6 +601,51 @@ A filled region defined by one or more closed loops. Each loop is an array of se
 
 Segment types: `"line"` or `"arc"`. Loops must be closed (last segment endpoint = first segment start point).
 
+A real export also carries `"pattern"` (a named fill pattern, e.g. `"stone"`) and `"patternScale"` alongside `"color"`/`"opacity"` — both optional, omit for a solid fill at default scale.
+
+---
+
+### Images
+
+Images are stored as base64 text. See below example
+
+```json
+        {
+          "id": "5776f8ac-a865-439e-99f1-2113c156e6fc",
+          "src": "data:image/png;base64,iVBO...",
+          "x": 3686.8526586590224,
+          "y": -8875.987027389341,
+          "width": 1650,
+          "height": 1173,
+          "rotation": 0,
+          "opacity": 1,
+          "z": 1,
+          "isPdf": false,
+          "isRenderer": false,
+          "s3dRender": null
+        }
+```
+
+`x`/`y` is the image's **top-left corner** (not a center), `width`/`height` in mm — for a
+square source image, set them equal to draw it undistorted. A production generator
+instead used `isPdf`/`pdfName`/`pdfPage` in place of `isRenderer`/`s3dRender` (for
+embedding a specific page of a PDF) — both variants have been seen working; include
+whichever pair matches what you're embedding, `isPdf: false` with the rest omitted is
+fine for a plain raster image.
+
+> **`images` is canvas-level only — it is NOT a supported item type inside a
+> `blockReferences[].items` block definition** (see "Blocks" below; the supported item
+> types there don't include `image`, and a real platform-exported title block confirms
+> this the hard way — its own logo slot is a plain **text placeholder** reading `"LOGO
+> PLACEHOLDER"`, not an embedded image, presumably for this exact reason). If you're
+> reusing the block-based title-block template (see "Pages & Title Blocks" below) and
+> need a real logo image in it, don't try to nest the image inside the block — instead,
+> push a separate entry onto the **canvas's own top-level `images` array**, positioned
+> (`x`/`y`/`width`/`height`) to land in the same spot the block's placeholder occupies.
+> A production generator does exactly this: it skips the block/instance system for its
+> title block entirely and draws the logo, and everything else in the block, straight
+> onto the canvas (`lines`/`texts`/`tables`/`images`) at computed absolute coordinates.
+
 ---
 
 ## Blocks
@@ -488,7 +680,9 @@ Verified against the live API and a genuine platform-exported project file.
 
 Supported item types inside blocks: `point`, `line`, `arc`, `dimension`, `multiLeaderText`,
 `hatch`, `text`, `leaderText` (the last two confirmed from a real title-block asset, not
-previously documented here).
+previously documented here). **`image` is not one of them** — see the "Images" note above
+for the canvas-level workaround (a real title block even uses a `"LOGO PLACEHOLDER"` text
+item where a logo would go, instead of an embedded image).
 
 `basePoint` is the anchor: it's the point *in the block's own local geometry* that gets
 mapped onto `position` when the block is instanced (see the transform below) — it is
@@ -499,6 +693,8 @@ centroid, or a specific corner).
 ### Block Instances
 
 Place a block on a canvas.
+
+![Block placement transform: local geometry maps to world space via position, scale, and basePoint](assets/images/block-transform.svg)
 
 ```json
 {
@@ -544,7 +740,17 @@ Assign elements to layers for color, visibility, and line-type control.
 }
 ```
 
-`lineType`: `"solid"`, `"dashed"`, etc.
+`lineType`: `"solid"`, `"dashed"`, `"dashdotdot"` (this last one confirmed from a real
+CloudCAD export, on a `constructionLines` entity — a common drafting convention for
+centerlines).
+
+> A `constructionLines` export also showed `lineType` set directly on the *element
+> itself*, not only via its `Layer` — i.e. `{ "point": {...}, "angle": 90, "lineType":
+> "dashdotdot" }`. Whether an ordinary bounded `line`/`polyline` (as opposed to an
+> infinite construction line) also respects a per-element `lineType` the same way is a
+> same-schema bet, not independently confirmed — round-trip test it (create one with the
+> field set in the CloudCAD UI, save, `cloudcad.file.open` it back) before relying on it
+> for anything that must render correctly unattended.
 
 ---
 
@@ -612,6 +818,11 @@ exported from the platform. Copy these three pieces verbatim into your new `cad_
 3. **The canvas's `block_instances[0]`** — places that block at
    `position: {x: 96700, y: -86048}`, `scale: {x: 2, y: 2}`, `rotation: 0`, referencing
    the `blockId` from step 2.
+
+> **Want a real logo instead of the template's `"LOGO PLACEHOLDER"` text?** Don't edit it
+> into the block — `image` isn't a supported block item type (see "Images" above). Add it
+> as its own entry in the canvas's top-level `images` array instead, with `x`/`y`/`width`/
+> `height` computed to land in the same spot, alongside your own drawing content below.
 
 Then add your own drawing content (lines, dimensions, texts) to the canvas, **translated
 only** to sit inside the page frame without overlapping the title block:
@@ -918,6 +1129,8 @@ Load a CAD model from cloud storage.
 **Organised drawings:** Assign elements to `layers` by referencing their `type` and `id`. Enable `displayColorByLayers` in settings to inherit layer colors.
 
 **Opening a previously saved drawing for editing:** Use `cloudcad.file.open` to load it into the session, modify via API, then `cloudcad.file.save` with the same name/path to overwrite.
+
+**The `z` field:** most element types (`lines`, `dimensions`, `axes`, `tables`, `block_instances`, `hatches`, ...) carry a `"z"` integer in a real export — an internal render/stacking-order index the platform assigns on save. Safe to omit when creating elements programmatically; don't try to control draw order with it.
 
 ## Sizing, Units and Scaling
 

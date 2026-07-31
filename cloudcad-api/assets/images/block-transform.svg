@@ -1,0 +1,38 @@
+<svg viewBox="0 0 520 260" xmlns="http://www.w3.org/2000/svg" font-family="monospace">
+  <style>
+    .axis  { stroke:#cbd5e0; stroke-width:1; }
+    .shape { stroke:#2b6cb0; stroke-width:2.5; fill:#bee3f8; fill-opacity:0.5; }
+    .pt    { fill:#dd6b20; }
+    .lbl   { fill:#1a202c; font-size:13px; }
+    .lbl2  { fill:#718096; font-size:12px; }
+    .title { fill:#1a202c; font-size:14px; font-weight:bold; }
+    .arrow { stroke:#718096; stroke-width:1.5; fill:none; marker-end:url(#ah); }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#718096"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="520" height="260" fill="#ffffff"/>
+
+  <text class="title" x="20" y="24">Block Definition (local space)</text>
+  <line class="axis" x1="40" y1="60" x2="40" y2="200"/>
+  <line class="axis" x1="40" y1="200" x2="220" y2="200"/>
+  <path class="shape" d="M70,180 L110,110 L150,180 Z"/>
+  <circle class="pt" cx="110" cy="160" r="4"/>
+  <text class="lbl" x="118" y="150">basePoint</text>
+  <text class="lbl2" x="70" y="215">local (x, y)</text>
+
+  <path class="arrow" d="M240,140 L300,140"/>
+  <text class="lbl2" x="235" y="125">position + scale</text>
+
+  <text class="title" x="320" y="24">Instance (world space)</text>
+  <line class="axis" x1="340" y1="60" x2="340" y2="200"/>
+  <line class="axis" x1="340" y1="200" x2="500" y2="200"/>
+  <path class="shape" d="M405,90 L465,55 L470,110 Z" transform="translate(0,50) scale(1)"/>
+  <circle class="pt" cx="430" cy="150" r="4"/>
+  <text class="lbl" x="438" y="145">position</text>
+  <text class="lbl2" x="340" y="215">world / canvas (x, y)</text>
+
+  <text class="lbl2" x="20" y="245">world.x = position.x + scale.x * (local.x - basePoint.x)   (same pattern for y)</text>
+</svg>
