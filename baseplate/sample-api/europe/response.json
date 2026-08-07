@@ -1,0 +1,103 @@
+{
+    "response": {
+        "data": {
+            "Weld Capacity": {
+                "demand": 0,
+                "capacity": 0,
+                "ratio": 0,
+                "units_on_UI": "stress",
+                "lc_number": 1
+            },
+            "Concrete Bearing Capacity and Base Plate Yield Capacity (Compression Load)": {
+                "demand": 100,
+                "capacity": 845.49,
+                "ratio": 0.118,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "version": "v2",
+            "file_name": "New File",
+            "rotational_stiffness": {
+                "stiffness_array": [
+                    "N/A"
+                ],
+                "upper_bound_array": [
+                    "N/A"
+                ],
+                "lower_bound_array": [
+                    "N/A"
+                ],
+                "remarks_array": [
+                    "N/A"
+                ]
+            },
+            "reports": {
+                "html_view_link": "https://solver.skyciv.com/temp/view_report_demehhxv9IH1A5Rp_1.php",
+                "html_download_link": "https://solver.skyciv.com/temp/download_html_report_demehhxv9IH1A5Rp_1.php",
+                "pdf_download_link": "https://solver.skyciv.com/temp/download_report_demehhxv9IH1A5Rp_1.php"
+            }
+        },
+        "msg": "Base plate design complete, returning results",
+        "status": 0,
+        "function": "standalone.baseplate.check",
+        "time_taken": 13.578,
+        "last_session_id": "z3Bq7hry58wE91pfisnmyYOuHgUUnziciUPl5OB7x0H0P60F8uYvbc94RkUYATxP_0",
+        "monthly_api_credits": {
+            "quota": 6000,
+            "total_used": 9,
+            "used_this_call": 1
+        }
+    },
+    "functions": [
+        {
+            "session_id": "z3Bq7hry58wE91pfisnmyYOuHgUUnziciUPl5OB7x0H0P60F8uYvbc94RkUYATxP_0",
+            "session_expiry_time": 1785813012,
+            "msg": "Standalone session successfully started.",
+            "status": 0,
+            "function": "standalone.baseplate.start",
+            "data": ""
+        },
+        {
+            "data": {
+                "Weld Capacity": {
+                    "demand": 0,
+                    "capacity": 0,
+                    "ratio": 0,
+                    "units_on_UI": "stress",
+                    "lc_number": 1
+                },
+                "Concrete Bearing Capacity and Base Plate Yield Capacity (Compression Load)": {
+                    "demand": 100,
+                    "capacity": 845.49,
+                    "ratio": 0.118,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "version": "v2",
+                "file_name": "New File",
+                "rotational_stiffness": {
+                    "stiffness_array": [
+                        "N/A"
+                    ],
+                    "upper_bound_array": [
+                        "N/A"
+                    ],
+                    "lower_bound_array": [
+                        "N/A"
+                    ],
+                    "remarks_array": [
+                        "N/A"
+                    ]
+                },
+                "reports": {
+                    "html_view_link": "https://solver.skyciv.com/temp/view_report_demehhxv9IH1A5Rp_1.php",
+                    "html_download_link": "https://solver.skyciv.com/temp/download_html_report_demehhxv9IH1A5Rp_1.php",
+                    "pdf_download_link": "https://solver.skyciv.com/temp/download_report_demehhxv9IH1A5Rp_1.php"
+                }
+            },
+            "msg": "Base plate design complete, returning results",
+            "status": 0,
+            "function": "standalone.baseplate.check"
+        }
+    ]
+}

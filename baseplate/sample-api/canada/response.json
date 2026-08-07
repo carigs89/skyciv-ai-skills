@@ -1,0 +1,201 @@
+{
+    "response": {
+        "data": {
+            "Weld Capacity": {
+                "demand": 0.42,
+                "capacity": 1.092,
+                "ratio": 0.384,
+                "units_on_UI": "force_per_unit_length",
+                "lc_number": 1
+            },
+            "Column Bearing Capacity": {
+                "demand": 60.476,
+                "capacity": 405,
+                "ratio": 0.149,
+                "units_on_UI": "stress",
+                "lc_number": 1
+            },
+            "Concrete Bearing Capacity": {
+                "demand": 22.851,
+                "capacity": 22.851,
+                "ratio": 1,
+                "units_on_UI": "stress",
+                "lc_number": 1
+            },
+            "Base Plate Yield Capacity (Bearing Interface)": {
+                "demand": 11.758,
+                "capacity": 20,
+                "ratio": 0.588,
+                "units_on_UI": "length",
+                "lc_number": 1
+            },
+            "Base Plate Yield Capacity (Tension Interface)": {
+                "demand": 9.276,
+                "capacity": 20,
+                "ratio": 0.464,
+                "units_on_UI": "length",
+                "lc_number": 1
+            },
+            "Anchor Rod Tensile Capacity": {
+                "demand": 16.235,
+                "capacity": 25.018,
+                "ratio": 0.649,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "Concrete Breakout Capacity (Tension Load)": {
+                "demand": 32.471,
+                "capacity": 33.271,
+                "ratio": 0.976,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "Anchor Pullout Capacity": {
+                "demand": 16.235,
+                "capacity": 290.429,
+                "ratio": 0.056,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "Embed Plate Flexural Capacity": {
+                "demand": 4.991,
+                "capacity": 10,
+                "ratio": 0.499,
+                "units_on_UI": "length",
+                "lc_number": 1
+            },
+            "Concrete Side-Face Blowout Capacity (Y-Direction)": {
+                "demand": 0,
+                "capacity": 0,
+                "ratio": 0,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "Concrete Side-Face Blowout Capacity (Z-Direction)": {
+                "demand": 32.471,
+                "capacity": 169.404,
+                "ratio": 0.192,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "version": "v2",
+            "file_name": "New File",
+            "reports": {
+                "html_view_link": "https://solver.skyciv.com/temp/view_report_zoy9TttUSVimUYlH_1.php",
+                "html_download_link": "https://solver.skyciv.com/temp/download_html_report_zoy9TttUSVimUYlH_1.php",
+                "pdf_download_link": "https://solver.skyciv.com/temp/download_report_zoy9TttUSVimUYlH_1.php"
+            }
+        },
+        "msg": "Base plate design complete, returning results",
+        "status": 0,
+        "function": "standalone.baseplate.check",
+        "time_taken": 14.762,
+        "last_session_id": "jxvY0vphIulzUFwOueUA4jg8YjhKar5SvV8zgT4ELHXhenwbTGfBy88NcqkWEs5q_0",
+        "monthly_api_credits": {
+            "quota": 6000,
+            "total_used": 8,
+            "used_this_call": 1
+        }
+    },
+    "functions": [
+        {
+            "session_id": "jxvY0vphIulzUFwOueUA4jg8YjhKar5SvV8zgT4ELHXhenwbTGfBy88NcqkWEs5q_0",
+            "session_expiry_time": 1785812776,
+            "msg": "Standalone session successfully started.",
+            "status": 0,
+            "function": "standalone.baseplate.start",
+            "data": ""
+        },
+        {
+            "data": {
+                "Weld Capacity": {
+                    "demand": 0.42,
+                    "capacity": 1.092,
+                    "ratio": 0.384,
+                    "units_on_UI": "force_per_unit_length",
+                    "lc_number": 1
+                },
+                "Column Bearing Capacity": {
+                    "demand": 60.476,
+                    "capacity": 405,
+                    "ratio": 0.149,
+                    "units_on_UI": "stress",
+                    "lc_number": 1
+                },
+                "Concrete Bearing Capacity": {
+                    "demand": 22.851,
+                    "capacity": 22.851,
+                    "ratio": 1,
+                    "units_on_UI": "stress",
+                    "lc_number": 1
+                },
+                "Base Plate Yield Capacity (Bearing Interface)": {
+                    "demand": 11.758,
+                    "capacity": 20,
+                    "ratio": 0.588,
+                    "units_on_UI": "length",
+                    "lc_number": 1
+                },
+                "Base Plate Yield Capacity (Tension Interface)": {
+                    "demand": 9.276,
+                    "capacity": 20,
+                    "ratio": 0.464,
+                    "units_on_UI": "length",
+                    "lc_number": 1
+                },
+                "Anchor Rod Tensile Capacity": {
+                    "demand": 16.235,
+                    "capacity": 25.018,
+                    "ratio": 0.649,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "Concrete Breakout Capacity (Tension Load)": {
+                    "demand": 32.471,
+                    "capacity": 33.271,
+                    "ratio": 0.976,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "Anchor Pullout Capacity": {
+                    "demand": 16.235,
+                    "capacity": 290.429,
+                    "ratio": 0.056,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "Embed Plate Flexural Capacity": {
+                    "demand": 4.991,
+                    "capacity": 10,
+                    "ratio": 0.499,
+                    "units_on_UI": "length",
+                    "lc_number": 1
+                },
+                "Concrete Side-Face Blowout Capacity (Y-Direction)": {
+                    "demand": 0,
+                    "capacity": 0,
+                    "ratio": 0,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "Concrete Side-Face Blowout Capacity (Z-Direction)": {
+                    "demand": 32.471,
+                    "capacity": 169.404,
+                    "ratio": 0.192,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "version": "v2",
+                "file_name": "New File",
+                "reports": {
+                    "html_view_link": "https://solver.skyciv.com/temp/view_report_zoy9TttUSVimUYlH_1.php",
+                    "html_download_link": "https://solver.skyciv.com/temp/download_html_report_zoy9TttUSVimUYlH_1.php",
+                    "pdf_download_link": "https://solver.skyciv.com/temp/download_report_zoy9TttUSVimUYlH_1.php"
+                }
+            },
+            "msg": "Base plate design complete, returning results",
+            "status": 0,
+            "function": "standalone.baseplate.check"
+        }
+    ]
+}

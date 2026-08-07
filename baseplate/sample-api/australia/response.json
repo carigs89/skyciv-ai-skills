@@ -1,0 +1,89 @@
+{
+    "response": {
+        "data": {
+            "Concrete Bearing Capacity": {
+                "demand": 100,
+                "capacity": 1701,
+                "ratio": 0.059,
+                "units_on_UI": "force",
+                "lc_number": 1
+            },
+            "Weld Capacity": {
+                "demand": 0,
+                "capacity": 0,
+                "ratio": 0,
+                "units_on_UI": "force_per_unit_length",
+                "lc_number": 1
+            },
+            "Base Plate Yield Capacity (Compression Load)": {
+                "demand": 47.326,
+                "capacity": 225,
+                "ratio": 0.21,
+                "units_on_UI": "stress",
+                "lc_number": 1
+            },
+            "version": "v2",
+            "file_name": "New File",
+            "reports": {
+                "html_view_link": "https://solver.skyciv.com/temp/view_report_75WfJw4j5xGK08nU_1.php",
+                "html_download_link": "https://solver.skyciv.com/temp/download_html_report_75WfJw4j5xGK08nU_1.php",
+                "pdf_download_link": "https://solver.skyciv.com/temp/download_report_75WfJw4j5xGK08nU_1.php"
+            }
+        },
+        "msg": "Base plate design complete, returning results",
+        "status": 0,
+        "function": "standalone.baseplate.check",
+        "time_taken": 10.996,
+        "last_session_id": "cOsyzbr5EcSYBjCFzBA6qewaUtPhiLFX5UDv4dNoYdgraVy3XEhbjcvUzdDmrxxT_0",
+        "monthly_api_credits": {
+            "quota": 6000,
+            "total_used": 6,
+            "used_this_call": 1
+        }
+    },
+    "functions": [
+        {
+            "session_id": "cOsyzbr5EcSYBjCFzBA6qewaUtPhiLFX5UDv4dNoYdgraVy3XEhbjcvUzdDmrxxT_0",
+            "session_expiry_time": 1785811145,
+            "msg": "Standalone session successfully started.",
+            "status": 0,
+            "function": "standalone.baseplate.start",
+            "data": ""
+        },
+        {
+            "data": {
+                "Concrete Bearing Capacity": {
+                    "demand": 100,
+                    "capacity": 1701,
+                    "ratio": 0.059,
+                    "units_on_UI": "force",
+                    "lc_number": 1
+                },
+                "Weld Capacity": {
+                    "demand": 0,
+                    "capacity": 0,
+                    "ratio": 0,
+                    "units_on_UI": "force_per_unit_length",
+                    "lc_number": 1
+                },
+                "Base Plate Yield Capacity (Compression Load)": {
+                    "demand": 47.326,
+                    "capacity": 225,
+                    "ratio": 0.21,
+                    "units_on_UI": "stress",
+                    "lc_number": 1
+                },
+                "version": "v2",
+                "file_name": "New File",
+                "reports": {
+                    "html_view_link": "https://solver.skyciv.com/temp/view_report_75WfJw4j5xGK08nU_1.php",
+                    "html_download_link": "https://solver.skyciv.com/temp/download_html_report_75WfJw4j5xGK08nU_1.php",
+                    "pdf_download_link": "https://solver.skyciv.com/temp/download_report_75WfJw4j5xGK08nU_1.php"
+                }
+            },
+            "msg": "Base plate design complete, returning results",
+            "status": 0,
+            "function": "standalone.baseplate.check"
+        }
+    ]
+}
