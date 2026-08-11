@@ -218,11 +218,47 @@ Available template shapes: `rectangle`, `hollow rectangle`, `circle`, `hollow ci
 
 ### `supports`
 
+**1. Node support** (one node at a time):
+
 | Key | Description |
 |---|---|
 | `node` | Node ID |
 | `restraint_code` | 6-char [restraint code](#restraint-codes) |
+| `direction_code` | Optional 6-char [direction code](#direction-codes) — refines which global direction(s) each restrained DOF acts in |
 | `tx/ty/tz/rx/ry/rz` | Spring stiffness values (used when restraint char = `S`) |
+
+**2. Line support** — applies the same restraint along a straight line of nodes in one
+entry instead of one `node` entry per point:
+
+| Key | Description |
+|---|---|
+| `type` | `"line"` |
+| `nodes` | Comma-separated node IDs defining the line (e.g. its two end nodes), as a string — e.g. `"1,3"` |
+| `restraint_code` | 6-char [restraint code](#restraint-codes) |
+| `direction_code` | Optional 6-char [direction code](#direction-codes) — refines which global direction(s) each restrained DOF acts in |
+| `tx/ty/tz/rx/ry/rz` | Spring stiffness values (used when restraint char = `S`) |
+
+`direction_code` is available on **both** support forms above, not just line supports —
+see [Direction Codes](#direction-codes) for the format.
+
+```json
+{
+  "supports": {
+    "1": {
+      "type": "line",
+      "nodes": "1,3",
+      "direction_code": "BBBBBB",
+      "tx": 0,
+      "ty": 0,
+      "tz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "restraint_code": "FFFFFR"
+    }
+  }
+}
+```
 
 ---
 
@@ -444,6 +480,25 @@ Examples:
 - `"FFFFFF"` — fully fixed (pin/fixed support)
 - `"FFFRRR"` — pinned (fixed translation, free rotation)
 - `"FFFFFR"` — fixed except rotation about local Z
+
+---
+
+## Direction Codes
+
+An optional 6-character string on a `supports` entry (either form), format `XYZxyz` —
+`X/Y/Z` = translational DOF, `x/y/z` = rotational DOF, **all in GLOBAL axes** (unlike
+`restraint_code`, which is local). It refines *which* global direction a restrained DOF
+acts in — only takes effect on a DOF whose `restraint_code` character is not `R`
+(released).
+
+| Character | Meaning |
+|---|---|
+| `B` | Restrains both axis directions |
+| `P` | Restrains the positive axis direction only |
+| `N` | Restrains the negative axis direction only |
+
+Example: `"BNBBBB"` restrains both directions on every DOF except the global
+Y-translation, which is only restrained in the negative direction.
 
 ---
 

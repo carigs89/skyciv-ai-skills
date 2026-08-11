@@ -23,6 +23,33 @@ A SkyCiv App is a draggable window registered inside S3D that renders your own H
 - **Model checks/automation** — scan the model for issues and highlight the offending elements.
 - **Custom overlays** — screenshot or annotate the current view for a report.
 
+> **Where should this UI actually live? Read this before scaffolding a floating window.**
+> Everything above and below describes the floating **App window**
+> (`SKYCIV_APPS.create`) — but this skill covers a second hosting mechanism,
+> **`S3D.UI.leftMenu`** (see "Hosting inside the Left Menu" below), and for most of the
+> use cases in the list above, the left menu is the **preferred** choice, not just an
+> alternative.
+>
+> Default to the left menu for anything that's a **general feature meant to feel like a
+> native part of S3D for every user** — a parametric generator (a truss builder, a
+> balustrade/stair builder, ...), a bulk-load/model-check tool, anything you'd expect to
+> see as a first-party S3D panel. It gets far more usable width for real form UI than a
+> floating window, doesn't add another draggable icon/window for the user to manage, and
+> reads as integrated rather than bolted-on. A truss generator is exactly this case: it's
+> broadly useful to any S3D user modeling a roof, so it belongs in the left menu, not in
+> its own floating window.
+>
+> Reach for the floating **App window** instead only when you specifically want a small,
+> movable tool the user keeps open *alongside* other panels while they work elsewhere in
+> the model (e.g. a persistent unit converter, a live readout), or for a one-off
+> personal/experimental utility that isn't meant to feel like a shipped S3D feature.
+>
+> The model read-modify-write pattern, selection helpers, and notifications below work
+> **identically** regardless of which one hosts your UI — only the container and its
+> open/close mechanics differ.
+
+In both cases, this will run on S3D which has Semantic UI installed. Please stay consistent with current UI and CSS using "primary" colour for blue buttons and core Semantic UI elements for dropdowns, inputs, radios etc..
+
 ---
 
 ## Runtime environment
@@ -200,6 +227,110 @@ Use this for validation errors (nothing selected, no model open, invalid input) 
 
 ---
 
+## Hosting inside the Left Menu (preferred for general features)
+
+When building an S3D feature meant for every user — not a personal one-off — host it in
+the left menu instead of a floating App window: the user gets more usable width for the
+GUI, and it feels like a native part of S3D rather than a bolted-on tool. See the
+callout under "What is a SkyCiv App?" above for the fuller App-window-vs-left-menu
+decision, and "Design pattern: parametric generator tools" below for how a generator
+like a truss builder fits this.
+
+If you build a tool like this, it's important to keep it all contained within it's own namespace for easy and reliable implementation. For example:
+
+```js
+S3D.trussBuilder = function() {
+    let functions = {};
+
+    functions.open = function() {
+        //for example we will connect this to a button in S3D
+    }
+
+
+    return functions; //return all public functions
+
+}();
+```
+
+`S3D.UI.leftMenu` is a singleton panel controller that slides open a temporary panel in
+the left sidebar. Unlike an App window, there's no `SKYCIV_APPS.create` registration, no
+launcher icon, and no draggable chrome to manage — you just call `open()`/`close()`
+directly.
+
+> **No iframe isolation — namespace your IDs/classes.** An App window renders `content`
+> as its own document; a left-menu panel injects `content` directly into the live S3D
+> page's DOM. Give every element a unique ID/class prefix (the same discipline as the
+> "give every CSS class a unique suffix" advice for App styling above), and scope your
+> jQuery lookups to the panel with `getSelector()` (below) rather than a bare global
+> `$('#some-id')`, to avoid colliding with S3D's own DOM or another open panel.
+
+---
+
+### `open(args)`
+
+Opens the panel. Closes any conflicting UI (renderer, datasheet, grouping).
+
+```js
+S3D.UI.leftMenu.open({
+    title: "My Panel",          // string — displayed as <h2> header
+    content: "<p>HTML here</p>",// string — inner HTML of the panel body (a fragment, not a full <html> doc)
+    width: 30,                  // number (0–100) — left sidebar width %, default 30
+    id: "my_panel_id",          // optional — stable element ID (persists user resize)
+    openFunction: function() {  // called after panel is injected & visible - bind events here (like onInit for Apps)
+        // bind events, init widgets, etc.
+    },
+    closeFunction: function() { // called when the panel is closed (X button or .close())
+        // cleanup
+    }
+});
+```
+
+**Notes:**
+- `width` is ignored if the user has previously resized a panel with the same `id` — their saved width is restored.
+- Will **not** open if a design load panel is already open (`S3D.design.load.isOpen()`).
+
+---
+
+### `close(show_input_buttons?)`
+
+Closes and removes the panel. Restores the left sidebar to its pre-open width.
+
+```js
+S3D.UI.leftMenu.close();         // restores input buttons (default)
+S3D.UI.leftMenu.close(false);    // suppresses input button restoration
+```
+
+---
+
+### `closeAll(show_input_buttons?)`
+
+Alias for `close()`.
+
+```js
+S3D.UI.leftMenu.closeAll();
+```
+
+---
+
+### `isOpen()`
+
+Returns `true` if the panel is currently visible.
+
+```js
+if (S3D.UI.leftMenu.isOpen()) { ... }
+```
+
+---
+
+### `getSelector()`
+
+Returns the CSS selector (`#id`) of the currently open panel element — useful for targeting it with jQuery.
+
+```js
+let sel = S3D.UI.leftMenu.getSelector(); // e.g. "#gen_left_menu_4821"
+```
+
+
 ## Worked example: auto-load beams with dead/live loads
 
 Demonstrates the full pattern: reading settings, respecting a "selected only" toggle via `getSelectedItems`, batching mutations, and a single `structure.set` call.
@@ -313,14 +444,25 @@ jQuery(document).ready(function () {
 
 ---
 
-## Design pattern: parametric generator apps (e.g. a balustrade builder)
+## Design pattern: parametric generator tools (e.g. a truss or balustrade builder)
 
-For apps that turn a couple of selected nodes plus form inputs into generated geometry (posts, rails, glass panels, loads), follow this shape:
+For tools that turn a couple of selected nodes plus form inputs into generated geometry
+(posts/rails/glass for a balustrade; chords/webs for a truss; etc.), follow this shape.
 
-1. **Require a selection first.** Call `S3D.structure.getSelectedItems().nodes`; if it isn't exactly the count you need (e.g. 2 start/end nodes), `sideNotify` an error and stop.
-2. **Compute geometry from the selection.** Read the two nodes' coordinates from `model.nodes`, work out the direction/length between them (or use `S3D.structure.nodes.getVector(startNode, endNode)` for the unit vector), then interpolate post positions along that line based on the "number of posts" input.
-3. **Respect `settings.vertical_axis`.** Apply the balustrade height offset to whichever coordinate is vertical (`z` or `y`) for the new top-of-post nodes.
-4. **Generate in the single `temp_s3d_model`.** For each post position: add a node, add a vertical member referencing the chosen `section_id`/`material_id` (from your dropdown inputs — populate dropdowns from the library sections/materials you expect the model to already contain, or add new `sections`/`materials` entries yourself and reference their IDs). Add a continuous handrail member connecting all post tops. If "add glass facade" is checked, add a `plates` entry between each consecutive pair of posts.
-5. **Optional loads are just conditional blocks.** If "post wind load" is checked, add `distributed_loads` on each post member; if "glass wind load" is checked, add `pressures` on each glass plate. Skip entirely if the checkbox is off.
-6. **One `S3D.structure.set(temp_s3d_model, null, true)` at the end** so the whole balustrade (posts, rail, glass, loads) appears — and undoes — as a single action.
+**Host it in the left menu, not a floating App window, if it's a general feature.** A
+truss generator or a balustrade builder is exactly the case the callout under "What is a
+SkyCiv App?" describes: broadly useful to any S3D user, so it should feel like a native
+S3D panel. The generation logic (steps 1–7 below) is identical either way — only the
+hosting/open call changes:
+
+- **Left menu (preferred):** `S3D.UI.leftMenu.open({ title, content, openFunction, ... })`, bind your form's events inside `openFunction`.
+- **App window (only for a personal/experimental tool):** `SKYCIV_APPS.create({ ... })`, bind events via `onInit`/inline `onclick`.
+
+1. **Require a selection first.** Call `S3D.structure.getSelectedItems().nodes`; if it isn't exactly the count you need (e.g. 2 start/end nodes for a balustrade run, or 2 support nodes for a truss span), `sideNotify` an error and stop.
+2. **Compute geometry from the selection.** Read the relevant nodes' coordinates from `model.nodes`, work out the direction/length between them (or use `S3D.structure.nodes.getVector(startNode, endNode)` for the unit vector), then derive the rest of the layout from your form inputs (post/panel count and spacing for a balustrade; panel count, height, and truss type for a truss).
+3. **Respect `settings.vertical_axis`.** Apply height offsets (post height, truss rise) to whichever coordinate is vertical (`z` or `y`) for the new nodes — never hardcode `y`.
+4. **Generate in the single `temp_s3d_model`.** Add every new node and member (and `plates`, for a balustrade's glass facade) referencing the chosen `section_id`/`material_id` (from your dropdown inputs — populate dropdowns from the library sections/materials you expect the model to already contain, or add new `sections`/`materials` entries yourself and reference their IDs).
+5. **Optional loads are just conditional blocks.** e.g. if "wind load" or "snow load" is checked, add the relevant `distributed_loads`/`pressures`; skip entirely if the checkbox is off.
+6. **One `S3D.structure.set(temp_s3d_model, null, true)` at the end** so the whole generated structure (geometry + loads) appears — and undoes — as a single action.
 7. **Highlight the result.** After `set`, call `S3D.graphics.highlightElement('member', [...newMemberIds])` so the user immediately sees what was generated.
+
