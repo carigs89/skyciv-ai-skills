@@ -29,11 +29,12 @@ The `s3d_model` is the JSON representation of a structural model. It is passed t
   "self_weight": { ... },
   "load_combinations": { ... },
   "load_cases": { ... },
-  "groups": { ... }
+  "groups": { ... },
+  "gridlines_and_elevations": [ ... ]
 }
 ```
 
-All objects use **integer-keyed dictionaries** (e.g. `"1": { ... }`, `"2": { ... }`).
+All objects use **integer-keyed dictionaries** (e.g. `"1": { ... }`, `"2": { ... }`), **except** `gridlines_and_elevations`, which is a plain array.
 
 > **Tip:** To inspect a model as JSON, open it in [SkyCiv S3D](https://platform.skyciv.com/structural) and use File → Export → SkyCiv File (JSON for API). To test JSON, use File → Import → SkyCiv File (JSON for API).
 
@@ -463,6 +464,48 @@ The key is the design code identifier. Each nested key is a load group name from
 ```
 
 `type` accepts: `"elements"`, `"nodes"`, `"supports"`, `"plates"`, `"groups"`.
+
+---
+
+### `gridlines_and_elevations`
+
+Optional, purely visual/organisational — doesn't affect analysis, but enables per-level platform features (e.g. isolating a floor). An **array** (not an integer-keyed dictionary) of elevation/story objects:
+
+```json
+{
+  "gridlines_and_elevations": [
+    {
+      "name": "Base",
+      "elevation": 0,
+      "axis": "y",
+      "is_draw": true,
+      "beams": [],
+      "columns": [
+        { "section_id": 1, "x": 0, "z": -10, "s3d_id": 1 }
+      ],
+      "plates": [],
+      "points": [],
+      "gridlines": [
+        {
+          "grid_id": "1",
+          "start_x": 0, "start_z": -10,
+          "end_x": 0, "end_z": 10,
+          "vector_x": 0, "vector_z": 1,
+          "grid_label": "start",
+          "startpt": [0, -12],
+          "endpt": [0, 12]
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `axis` should match [`settings.vertical_axis`](#settings).
+- `columns[].s3d_id` is the ID of the matching column in `members`/`nodes`; `columns[].section_id` is the ID in `sections`.
+- `beams`, `plates`, `points` are reserved (mirror `columns` structurally) — not yet documented, leave as `[]`.
+- `gridlines[].grid_id` is the label text printed on the gridline; `grid_label` (`"start"` or `"end"`) controls which end it's printed at.
+- `startpt`/`endpt` extend slightly past `start_x/start_z`/`end_x/end_z` to leave room for the label — not the structural extents.
 
 ---
 
